@@ -1,0 +1,152 @@
+whats rag?
+
+so your compnay has 500go of document in your server
+and you were asked to connect AI assistant to answer questions about these documents
+
+avaialbel solutions:
+
+1- search every file by name, whenever a user asks a question
+
+you would think that you will need to create an algorithm to search for every file by name
+when given a question
+--> THIS IS wrong
+doign this means taht you are gonna scan/parse the documents every time when someone asks a question
+--> every time a user searches, the ai has the search for the entire documents
+
+2- summarize the work into chunks for easier search
+
+doing pre-processing work, searching for every file and summarize it into chucnks
+to make the search fast
+--> this is also wrong
+doing this means that you will end up with summaries without accurate contexts
+
+3- combine the both methods into one!
+
+LLM takes input through word embedding
+word embdding means words == numbers, this is what llm understands
+
+
+instead of searching the entire 500go of documents, we essentially store these documents by perserving the semantics which means the meaning of those words into a vector embedidng 
+and those embeddings into data base as vectors
+
+this is what RAG is:
+
+RAG lets ai looks up information from your own data before generating an answer!
+
+without RAG ai mainly asks from what it learned during training
+
+wiht RAG:
+user question
+search relevent information documents
+give these documents to ai
+ai generates answers
+==> RAG is useful for private companies with private data
+they utulize ai models taht are already trained, and use it with RAG so the output generates
+relevnt information with their own private data!
+
+say you work in company that uses a model for personal question related to wprk policies and rules:
+you use ai agent to aske about the vacation duration:
+say that your company has this data:
+
+company/
+    ├── vacation_policy.pdf
+    ├── employee_handbook.pdf
+    ├── health_insurance.pdf
+    └── remote_work_policy.pdf
+
+
+                    Your question
+                         │
+                         ▼
+              "How many vacation days
+                 after 3 years?"
+                         │
+                         ▼
+                  Search the data
+                         │
+              ┌──────────┴──────────┐
+              ▼                     ▼
+       vacation_policy.pdf    employee_handbook.pdf
+              │
+              ▼
+       relevant paragraphs
+              │
+              ▼
+          LLM receives:
+       question + relevant text
+              │
+              ▼
+             Answer
+
+
+==> so rag is is basically search + LLM
+rag == retrieval + generating
+
+1- retrieval:
+    finding relevant information
+
+2- augmented:
+    add that retrieved information to the prompt/context given to the LLM
+
+3- geneartion:
+    THE LLM uses that information to generate the answer
+
+=====================================================================
+
+concepts for RAG:
+
+1. LLM
+   ↓
+2. Embeddings
+   ↓
+3. Vector database
+   ↓
+4. Similarity search
+   ↓
+5. RAG pipeline
+
+---------------
+
+Documents
+   ↓
+Chunking
+   ↓
+Embeddings
+   ↓
+Vector DB
+   ↓
+Retrieval
+   ↓
+Prompt construction
+   ↓
+LLM
+   ↓
+Answer
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
