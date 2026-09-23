@@ -91,41 +91,52 @@ rag == retrieval + generating
 3- geneartion:
     THE LLM uses that information to generate the answer
 
-=====================================================================
+============================================================================================
 
-concepts for RAG:
+rag vis a powerful system for adding depth to the agents beyond their trained data!
+but just like any other systems, learning how to calibrate is an acquired skill that needs to be learned to get better results
 
-1. LLM
-   ↓
-2. Embeddings
-   ↓
-3. Vector database
-   ↓
-4. Similarity search
-   ↓
-5. RAG pipeline
-
----------------
-
-Documents
-   ↓
-Chunking
-   ↓
-Embeddings
-   ↓
-Vector DB
-   ↓
-Retrieval
-   ↓
-Prompt construction
-   ↓
-LLM
-   ↓
-Answer
+1- chunking startegies  | langchain
+2- embedding strategies | bm25
+3- retrieval strategies | ...
 
 
+1- chunking:
+
+==> there are differnet strategies to split a text
+
+for startes lets see the most basic splitter we can use:
+1- manual:
+
+chunks = []
+lenght = 35
+for i in range(len(text))
+    chunk = text[i:i+length]
 
     
+==> chunking is split into 2 parts:
+
+1- lexical:
+this is where the split based on number of characters or tokens, commas, sentences, markdown actions
+basically lexical is about splitting based on an sliding window chunking
+
+2- semantic:
+based on meaning
+semantic chunking finds the meaning by using embedding to detect changes in meanign
+it compares the vector next to it, to compare with the current vector, to see if they are clsoe in meaning
+
+lexical: faster, doesnt understand topics boundaries
+semantic: slower, does understand topics boundaries
+
+using an AI Agent to troubleshoot something, its better to have a rag based on semantic chunking
+chunking logs for example, is better to have it done in semantic 
+to keep the conexts of logs intact!
+
+
+
+2- understand langchain for chunking:
+
+
 
 
 

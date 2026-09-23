@@ -1,0 +1,54 @@
+4 stages:
+indexing: organize the data so it can be searched
+retreieving: match a question against the index and pull hte most relevent snippet
+augementing: filter those snippets and place them in the model's context windows
+generating: read that context and produce an answer
+
+-----------------------------------------------
+
+learn how to use pytest or unitest for this project!
+
+
+-----------------------------------------------
+
+process?
+
+1- index the codebase:
+read files and chunk them
+then presist an index that retrieval can query in miliseconds
+--> indexing must take at most 5 minutes
+
+python files and markdown files do not break in the same manner!
+python code chunking
+markdown / text chunking
+
+for retrieval use at least one of the two lexical methods:
+tf-idf
+bm25
+--> you can add other methods on top of one of these 2
+--> one of them has to be implemented
+
+==> the chunk size if configurable through the CLI, 2000 is the default
+==> 2000 is also the maximum, moulinette wont accept it!
+
+2- retrieval:
+now that we havet he index built, we need to retrieve it
+your system returns top-k most relevant snippet
+each result is a source location:
+    file_path/the_character_range
+
+questions exists in json file!
+your system must at least reach:
+    80% on doc questions
+    50% on code questions
+    --> this is defined in evaluation chapter!
+
+
+
+-----------------------------------------------
+questions about the subject:
+
+whats a snippet?
+whats a markdown?
+
+
