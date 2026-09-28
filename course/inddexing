@@ -1,0 +1,43 @@
+indexing is the process by which we turn raw data into searcharble one at query time
+
+
+indexign converts your raw data into a searchable process so that retrievale at query time is fast and accurate!
+
+how does indexing work?
+
+index asks this question, which chunks is the most relevent to this question?
+
+
+the index pipeline:
+
+
+RAW DATA
+   │
+   ▼
+┌──────────┐
+│  LOAD    │  ← Document Loaders
+└──────────┘
+   │  Documents
+   ▼
+┌──────────┐
+│  SPLIT   │  ← Text Splitters
+└──────────┘
+   │  Chunks
+   ▼
+┌──────────┐
+│  EMBED   │  ← Embedding Model
+└──────────┘
+   │  Vectors
+   ▼
+┌──────────┐
+│  STORE   │  ← Vector Store + Index
+└──────────┘
+   │
+   ▼
+SEARCHABLE INDEX  ← ready for queries
+
+
+
+
+
+

@@ -1,0 +1,272 @@
+langchain pipeline looks like this:
+
+1- load your data:
+everything starts with converting your source data (pdf, webpage, files_extension) into langchain's
+standard format called document object!
+
+--> how does document object work?
+the langchain document is the universal data carrier that travels through every step of the RAG pipeline
+
+why do we use document object, and not a list or different data structure?
+document comes to solve a core problem thats:
+    the raw data that we try to index comes in differenet forms:
+        pdf, code files, web pages, etc...
+        each with different forms
+        ==> we need one single obejct that carries the data and enables every component of the  
+            pipeline to understand
+
+whats document?
+
+is just a simple container with three fields:
+    page_content: str == actual contenet of txt
+    metadata: dict == info about text: source = file.pdf, page, author, data. etc../
+    id: str (optional) == unique identifier, useful for tracking a specific chunk!
+
+how documetns help?
+
+without document object, you would have to create a list[str] for text/content, list[dict] 
+for metadata, and a list[np.ndarray] for vectors.
+you'd have to manually keep them aligned through everystep, which is error-prone 
+
+document solves this binding content + metadata into a single unit!
+which allows it to travel together!
+
+    
+how it works in the pipeline:
+1- loading
+2- splitting: text_splitter
+3- embedding and storing
+4- retreival
+5- generation
+
+
+
+
+
+
+
+
+
+
+
+
+===========================================================================================
+
+2- splitting into chunks:
+a full document is usually too large for embeddings to capture meaningingfullly and for the LLM's
+context window
+
+so we split into chunks, snippets, so retrieval can be precise
+
+the recommneded splitter is recursivecharactertextersplitter
+it tries to split on natural boundaries (paragphras, senteces) and supports overlap
+
+--> recursive, overlap, chunking, chunk_size
+
+1- whats splitting:
+
+splitting is the step where you beakr big documents into smaller ones
+this is ciritical for rag:
+1- embedding needs focus: 50 pages document becomes a blurry average of meanings
+2- retrieval needs precision: you want to find hte paragphra about restting not the whole manual
+3- LLM have limited context limits: you can only fit so much text into prompt
+
+
+
+a- recursive splitting
+
+recursive spliiting uses a list of seprators:
+list_of_separtors = [\n\n. \n. ",". ".", "",  " "]
+
+\n\n == end of paragraph
+if too big, move to \n
+and so on....
+
+how does recursive handle cutting words:
+RecursiveCharacterTextSplitter does NOT cut mid-word if it can help it. 
+It looks backward from the 1000-character mark to find the nearest separator that came before it
+and cuts there. It never moves forward.
+
+
+b- overlapping
+overlapping came to solve 2 main problems:
+
+1- cutting mid word: wonderful == [wonder] [ful] --> incoherent meaning
+2- cutitng mid sentence: hold the button for ten seconds to activate the program
+embedding_1 [hold the button for ten]
+embedding_w [seconds to activate the program]
+
+==> to retireve the chunk to answer this question: how long should i hold the button
+neither the embedding provide an answer, hence retireve the correspeonding chunk of the question is impossible
+
+c- how overlapping solve this:
+Chunk 1: ...[hold the button for ten seconds and then]
+Chunk 2: [for ten seconds and then release it slowly]...
+
+==> by repeating the boundary check in both chunks, now both chunks complete the idea!
+which one you retireve, has an answer!!
+
+
+d- how does it work?
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000,
+    chunk_overlap=200
+)
+
+chunk_size == 1000, each chunk is at least 1000CHAR LONG
+chunk_overlap == each chunk starts at least 200 cgaracter before the previous chunk ended
+
+Text:    [==================================================]
+Chunk 1: [==========1000==========]
+Chunk 2:                    [==========1000==========]
+                            └─200─┘
+Chunk 3:                                       [==========1000==========]
+                                                └─200─┘
+
+
+chunk 1 == 1000 character long chunk, but with catering for the mid-word cutting! could be less
+chunk 2 == 200 character of the last chunk + 800 new character
+chunk 3 == the last 200 character of chunk 2 +  800 new character!
+
+==> this is how our chunks will look like!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===========================================================================================
+
+
+3- creating embeddings:
+
+embeddings convert each text into a numeric_vector that caputures the semantic meaning
+texts taht are similar will have vectors that are close together in vector space
+
+
+===========================================================================================
+
+
+4- storing in a vector store:
+a vectorstore indexses these embeddings so you can perform similarity search at query time!
+it stores mapping between 
+
+LangChain integrates with many vector stores: InMemoryVectorStore for lightweight/prototyping, FAISS for in-memory speed, Chroma for persistence, and PostgreSQL (pgvector) for production databases
+
+
+===========================================================================================
+
+
+5-  Retrieving Relevant Context
+
+At query time, you convert the user's question into an embedding using the same embeddings model, then search the vector store for the most similar chunks.
+
+The vector store returns the top k relevant document chunks. These are your snippets of context.
+
+
+===========================================================================================
+
+
+6- generating answers:
+
+Now you combine retrieval with generation. You feed the retrieved chunks into an LLM prompt as context, along with the user's question. The LLM answers only based on the provided context—this grounds the response and reduces hallucination
+
+
+
+===========================================================================================
+
+how does lanchain work? the pipeline:
+
+1- first we import the lamchain recursivetextsplitter
+2- we also import Lnagauge along with recursivetextsplitter
+
+3- we create 2 objects out of the recursivetextsplitter!
+
+text_splitter and python_splitter / code_splitter!
+
+4- we set the recrusivetext objects with the right params
+chunk_size, chunk_overlap, add_start_index
+and finally language=Language.PYTHON for pythong_splitter
+
+how does each param work
+1- chunk_size and overlap are OK
+
+
+2- add_start_index = True!
+    when we add the add_start_index, we record where each chunk start in the OG text
+    for example:
+
+    hello world its me.
+    say that we have a chunk for every word!
+    this means:
+        [hello]     ->  index 0 --> index of the first character 'h'  
+        [word]      ->  index 6 --> index of the char 'w' in the OG text
+        [its]       ->  index 12 --> index of 'i' in the OF text
+        [me]        ->  index 16 --< index of 'm'
+
+    ==> this is what add_start_index do!
+    ==> debug this by pritning the output with index
+
+3- what does language=Langauge.PYTHON
+
+Langauge is an enum!
+
+Language.PROGRAMMING_LANGUAGE is what makes langchain language aware splitter
+for code and structered documents!
+
+the print the keys and values of the Langauge enum do this:
+
+    for key in Language:
+        print(key.name)
+        #or
+        print(key)
+
+
+==> internally when you call Language.languae
+==> the seperators of a langauge change from ["\n\n", "\n". " "....]
+==> to [\nclass, \ndef, '\n\tdef'] for pythong for example! --> this is why lint is important!
+
+
+4- textloader
+
+aude
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

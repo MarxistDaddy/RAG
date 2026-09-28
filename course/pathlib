@@ -1,0 +1,124 @@
+my progrem has to read a whole codebase:
+
+data/raw/
+├── vllm/
+│   ├── engine.py
+│   ├── config.py
+│   └── utils/
+│       └── helper.py
+└── docs/
+    ├── guide.md
+    └── notes.txt
+
+----> my program needs to:
+
+- find files
+- know whether something is a file or a dir
+- get the file extention
+- consruct paths
+- navigate directories
+
+----------------------------------------
+
+to resolve these problems, we utulize the pathlib library
+pathlib gives you an object to solve this instead of representing the path as a string!
+we used to work with os, path is just overall better on every aspect!
+
+
+----------------------------------------
+
+
+basic guide to work your way around path:
+
+from pathlib import path
+
+then we create an object file:
+    1- we can pass anything to this object, literally anything
+     - we usually pass paths here, but its better to pass something valid
+
+ex:
+    p = path("this/path/does/exist")
+    print(p.exists())     # False
+    print(p.is_file())    # False
+    print(p.is_dir())     # False
+
+==> the path becomes real when we do I/O with it: read, open, mkdir, etc...
+
+
+for our project, we define the path of our output as this:
+        data/raw/vllm/output
+
+so we need to first:
+
+1- create a path with  data/raw
+2- apply the path methods on it:
+    is_dir()
+    is_file()
+    exists()
+    path.name   == file.py
+    path.stem   == file
+    path.suffix == .py
+    path.parent == data/raw
+
+3- create a new dir with this path object
+    new_dir = root + path
+    print(new_dir)
+
+4- now lets find files inside the this data/raw dir:
+    we can use:
+        path.iterdir()
+        for item in path.iterdir()
+            print(item)
+        --> this only give me one level parsing
+            data/raw/vllm
+            data/raw/docs
+            data/raw/README.txt
+    
+    we need recursive search:
+        for item in rglob("*"):
+            if item.isfile() and item.suffix in {".py", ".txt"}
+                print(item)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

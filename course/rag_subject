@@ -52,3 +52,97 @@ whats a snippet?
 whats a markdown?
 
 
+
+1- path
+2- fire
+3- langchain
+4- bm35s
+
+
+---------------------------------------------
+
+    1- RAG fundamentals
+What RAG actually is
+Indexing vs retrieval vs augmentation vs generation
+Why retrieval quality matters
+Context windows
+Grounding vs hallucination
+
+    2- Document ingestion & chunking
+Reading a codebase
+Python AST / code-aware chunking
+Markdown/text chunking
+Chunk size
+Overlap
+Character offsets
+
+    3- Lexical search
+Tokenization
+Inverted indexes
+TF-IDF
+BM25
+Ranking
+Why lexical retrieval is particularly useful for code/identifiers
+
+    4- RAG architecture
+Indexer
+Retriever
+Pipeline/orchestrator
+Generator
+Data models
+How the components communicate
+
+    5- LLM inference
+Qwen3-0.6B
+Prompting
+Context construction
+Local inference
+Structured output
+Keeping answers grounded in retrieved sources
+
+    6- Evaluation
+Recall@k
+Ground-truth source ranges
+IoU overlap
+Why retrieving the right file matters
+Performance constraints
+
+    7- Production/project engineering
+Pydantic
+Python typing + mypy
+flake8
+uv
+Python Fire CLI
+tqdm
+Makefile
+pytest
+project structure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
