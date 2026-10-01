@@ -17,7 +17,9 @@ class RAG:
 
     def index(self, max_chunk_size: int = 2000):
         res = index_files(max_chunk_size, self.path)
-        print(f"main_index == {res}")
+        #print(f"main_index == {res[0]}\n====\n")
+        #print(f"main_index == {res[1]}\n=====\n")
+        #print(f"main_index == {res[2]}")
         
 
 

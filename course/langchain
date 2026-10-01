@@ -240,10 +240,56 @@ the print the keys and values of the Langauge enum do this:
 ==> to [\nclass, \ndef, '\n\tdef'] for pythong for example! --> this is why lint is important!
 
 
-4- textloader
+4- textloader and load()
 
-aude
+textloader just wraps the file in a documant
+load() does the i/o operations: read the file, then decode docuemtn!
 
+==> why does textloader and load return a list when theres only one object passed to it
+
+
+
+5- split:
+
+take the list of documents that was returned by the textloader.load()
+and split them according to text or pythong splitter
+then store in the documents that we have
+
+how to split:
+
+splitter.document_splitter(loaded_doc)
+
+
+the result that we get:
+
+docuemtns: a list that contains docuemnts of the document_split
+
+example of this file:
+
+# Contributing to vLLM
+
+You may find information about contributing to vLLM on [docs.vllm.ai](https://docs.vllm.ai/en/latest/contributing).
+
+
+
+this is the result we get:
+
+main_index == page_content=
+
+'# Contributing to vLLM
+
+You may find information about contributing to vLLM on [docs.vllm.ai](https://docs.vllm.ai/en/latest/contributing).' 
+
+metadata={'source': 'data/raw/vllm-0.10.1/CONTRIBUTING.md', 'start_index': 0}
+
+
+
+==> this si the actual result that we got! 
+
+content + metadata
+
+content == actual content that the size of chunk_size
+metadata == source + start index
 
 
 
