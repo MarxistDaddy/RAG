@@ -1,0 +1,42 @@
+tf_idf
+
+term frrequence
+inverse documetn frequenct
+
+tf-idf measures how important a word to a document
+
+when searching for words and text analysis, plain words count fail
+because common words like: the, so, and... are so common but insignifact
+
+tf-idf uses 2 metrics to find words that standout the most:
+
+1- term frequenct:
+how often a word appears in a single file
+
+
+
+
+
+
+2-inverse documetnt frequence
+how rare or unique that word across the entire dataset
+
+
+
+
+
+
+
+
+============================
+
+bm25
+is an optimized version of tf-idf
+look more into later on! its not important right now to waste time on it!
+
+
+
+
+
+
+

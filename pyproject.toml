@@ -11,5 +11,20 @@ dependencies = [
     "langchain-community>=0.4.2",
     "langchain-text-splitters>=1.1.2",
     "pydantic>=2.13.5",
+    "torch>=2.14.1",
     "tqdm>=4.70.1",
+    "transformers>=5.18.0",
 ]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "mypy>=2.1.0",
+    "ruff>=0.15.13",
+]
+
+[tool.ruff]
+line-length = 79
+
+[tool.mypy]
+exclude = ".venv"

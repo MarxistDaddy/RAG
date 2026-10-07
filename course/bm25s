@@ -1,0 +1,248 @@
+the pipeline of bm25s:
+
+so currently we are at a point where we have a list of diction called records
+each item in this list is a dict that contains all the info about the chunks
+dict looks like this:
+    file_path
+    start
+    end
+    text
+
+but before this have 2 seperate variable that include content and metadata of the document!
+
+so...
+
+1- the first step:
+take the content and tokenize it using bm25s 
+
+    corpus = bm25s.tokenize(content)
+
+corpus now produces this value
+
+
+
+content:
+
+# Contributing to vLLM                                                                                 
+
+You may find information about contributing to vLLM on [docs.vllm.ai](https://docs.vllm.ai/en/latest/contributing).
+
+
+
+
+corpus output:
+
+Tokenized(
+  
+  "ids": [
+    0: [0, 1, 2, 3, 4, 5, 6, 0, 1, 7, ...]
+    1: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, ...]
+    2: [66, 142, 68, 69, 143, 64, 144, 9, 88, 145, ...]
+    3: [189, 193, 68, 69, 194, 1, 71, 9, 94, 95, ...]
+    4: [189, 142, 68, 69, 257, 1, 71, 9, 258, 259, ...]
+    5: [139, 6, 1, 44, 43, 301, 302, 46, 159, 47, ...]
+    6: [409, 9, 7, 1, 8, 10, 11, 408, 409, 138, ...]
+    7: [506, 211, 507, 506, 211, 508, 509, 510, 331, 80, ...]
+    8: [525, 1, 526, 527, 528, 529, 9, 511, 28, 1, ...]
+    9: [582, 176, 367, 583, 584, 585, 586, 587, 588, 589, ...]
+    ... (total 15337 docs)
+  ],
+
+  
+  "vocab": [
+    '00': 7123
+    '000': 15355
+    '0000': 44485
+    '000001907348633': 51080
+    '000002': 8949
+    '00000286102295': 51880
+    '000003814697266': 51881
+    '000006675720215': 52024
+    '00001': 42696
+    '000011444091797': 51807
+    ... (total 57116 tokens)
+  ],
+)
+
+
+ids == each document converted to a list of integer token IDs
+vocab == the vocabular: the mapping from token string -> integer ID
+
+
+whats a token?
+
+for every text, we need to convert that to a token
+if our text is like this: hello world its me
+here we have 4 tokens: "hello", "worlk", "its". "me"
+then we assign them token ids: 0, 1, 2, 3
+
+whats vocab?
+
+now that we have tokens and ids, we assign the ids to their word
+    "hello": 0
+    "world": 1
+    "its": 2
+    "me": 3
+
+
+-----------
+
+output of bm25s:
+
+we get a tokenize object!
+that contains ids and vocab
+
+
+ids == each docuemnt contains a list of token ids
+vocab == is a look up table
+
+----------
+
+heres the actual pipeline of bm25s tokenization:
+
+document is an object that contains plain text with its metada
+we used a function to unpack content and metadata
+
+1- tokenize
+
+we take the content, thats plain text
+and pass to bm25s to tokenize it
+--> bm25s returns a toknize object with 2 elements: ids and vocab
+
+2- tokenizising process:
+
+a-
+we take the content, then split it into tokens
+"# Contributing to vLLM"  →  ["#", "contributing", "vllm"]
+still strings here!!
+
+
+b-
+build vocab table
+vocab is about finding unique tokens, then assign them IDS
+then replace every token its ID
+
+encoding is the process by which we take the string_word and convert it to ID
+text  →  tokens  →  [ENCODING]  →  IDs
+         (words)     (vocab)      (numbers)
+
+encodingn is what turns our tokens_words to IDs
+
+====================================
+
+process:
+
+content = ["hello world", "world peace"]
+        │
+        ▼  1. split into tokens
+tokens = [["hello", "world"], ["world", "peace"]]
+        │
+        ▼  2. build vocab (scan all tokens, find unique ones, assign IDs)
+vocab = {"hello": 0, "world": 1, "peace": 2}
+        │
+        ▼  3. encode (lookup each token)
+ids = [[0, 1], [1, 2]]
+
+===========================================================================================
+
+now that we are done with tokenizing our document list
+we need to index it
+
+
+1- we need to create an empty index object
+
+index_obj = bm25.BM25()
+index_obj is an instant of indexer object
+
+then we call the index() method of index_obj, to index
+
+indexe_obj.index(corpus_tokens)
+
+if we print the keys of this index_obj, 
+    print: index_obj.__dict__.keys()
+we are gonna get this output:
+dict_keys(
+
+['k1', 'b', 'delta', 'dtype', 'int_dtype', 'method', 'idf_method', 'methods_requiring_nonoccurrence', 'corpus', '_original_version', 'csc_backend', 'backend', 'nonoccurrence_array', 'scores', 'vocab_dict', 'unique_token_ids_set']
+
+)
+
+
+
+===========================================================================================
+BM25 is about finding how relevent each document is to your query!
+
+
+
+BM25 score explained:
+
+bm25 scores how relevent a document to a query! 3 principals:
+
+1- TF:  how often the term appears on in the doc
+2- IDF: how rare the term is across all the docs
+3- length normaliatioun: penalize long docs so they dont win by being big
+
+the bm25 formula:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
