@@ -19,9 +19,8 @@ def retrieve_files(path) -> list:
     return list_of_files
 
 
-def build_splitter(
-    c_size: int,
-):  # -> tuple[RecursiveCharacterTextSplitter * 2]
+def build_splitter(c_size: int,):  # -> tuple[RecursiveCharacterTextSplitter * 2]
+    
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=c_size, chunk_overlap=50, add_start_index=True
     )
@@ -36,9 +35,7 @@ def build_splitter(
     return text_splitter, python_splitter
 
 
-def load_and_split(
-    files: list[pathlib.path], chunk_size: int
-) -> list[Document]:
+def load_and_split(files: list[pathlib.path], chunk_size: int) -> list[Document]:
     # try:
     if 0 <= chunk_size <= 2000:
         print(f"chunk_size: {chunk_size}")
@@ -48,14 +45,10 @@ def load_and_split(
     documents: list[Document] = []
     text_splitter, python_splitter = build_splitter(chunk_size)
 
-    # print("language:")
-    # for key in Language:
-    #    print(key)
-
     for file in files:
         loaded_doc = TextLoader(file, autodetect_encoding=True).load()
         splitter = python_splitter if file.suffix == ".py" else text_splitter
-        # print(f"{file.suffix} == {splitter}")
         documents.extend(splitter.split_documents(loaded_doc))
+
 
     return documents

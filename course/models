@@ -1,0 +1,14 @@
+how and where to use the models:
+
+1- minimal source:
+defines the exact location of a retrieved chunk
+file_path, first and last index
+
+2- answered and unaswered qestions:
+unique auestion with unique id
+
+3- 
+
+
+
+

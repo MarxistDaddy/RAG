@@ -1,0 +1,24 @@
+rigth after indexing, we need to start doing our search
+search step follows this criteria:
+    1- we need to rely on our pydantic classes
+       to validate our question and anserwws
+
+
+    2- pipeline of search according to model_data
+
+
+3- what each data_model does:
+
+
+
+
+
+
+
+
+
+
+
+
+
+

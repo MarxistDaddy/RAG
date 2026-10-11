@@ -1,0 +1,21 @@
+retrieving and answering the right question are a 2 different things:
+
+role of the data_models:
+
+we are providede 2 differnt tasks: answered and unansered questions
+
+1- unanswered questions need to go through this pipeline
+...
+
+
+2- answered need to go through this pipeline:
+....
+
+
+
+
+
+
+
+
+
