@@ -6,7 +6,16 @@ from .indexing import index_files
 import bm25s
 from .retrieve import retrieve_chunks
 from .llm_model import Model
-from .data_models import UnansweredQuestion, MinimalSource, MinimalSearchResults, StudentSearchResults
+
+from .data_models import (
+    UnansweredQuestion,
+    MinimalSource,
+    MinimalSearchResults,
+    StudentSearchResults,
+    MinimalAnswer,
+)
+
+
 import json
 import tqdm
 
@@ -20,7 +29,7 @@ class RAG:
         else:
             print("YES PATH!")
 
-        #self.model = Model()
+        self.model = Model()
 
     def index(self, max_chunk_size: int = 2000):
         index_files(max_chunk_size, self.path)
@@ -40,7 +49,7 @@ class RAG:
             for chunk in chunks
         ]
         
-        return MinimalSearchResults(
+        return chunks, MinimalSearchResults(
             question_id=question.question_id,
             question=question.question,
             retrieved_sources=sources
@@ -68,52 +77,46 @@ class RAG:
         for q in result:
             print(type(q))
             print()
-
         a = StudentSearchResults(search_results=result, k=k)
+        with open( save_directory, "w") as file:
+            json.dump(a.model_dump(mode='json'), file, indent=4)
+        
         print(type(a))
         print(a.search_results)
         print(a.k)
 
 
+    def answer(self, query, k):
+        chunks, search_result = self.search(query, k)
 
-
-
-
-
-
-
-
-
-
-
-
-    def answer():
         context = "\n\n".join(
             f"source: {chunk['file_path']}\n"
             f"content: {chunk['text']}"
             for chunk in chunks
         )
         
-        prompt =  [
+        prompt = [
             {
                 "role": "system",
                 "content": (
-                    "You are a helpful assistant that answers questions "
-                    "using the provided context from the user's files.\n"
-                    "Only use information from the provided context. "
-                    'If the context does not contain enough information, say "I don\'t know."'
+                    "Answer using only the provided context. "
+                    'If the context is insufficient, say "I don\'t know."'
                 ),
             },
             {
                 "role": "user",
                 "content": (
                     f"<context>\n{context}\n</context>\n\n"
-                    f"<question>\n{question.question}\n</question>"
+                    f"<question>\n{search_result.question}\n</question>"
                 ),
             },
         ]
+
         
-        res = self.model.generate(prompt)
+
+
+        generated_answer = self.model.generate(prompt)
+
 
 
 
