@@ -1,0 +1,46 @@
+say that i have a json file
+
+and i want to read and write from it
+
+1- i need to open the file
+
+with open("json.json", "r") as file:
+    data = json.load(file)
+
+
+willl load the data of jsson in the given variable
+data var is now a dict that can read and write that data
+
+
+2- to write a dict into a json file
+
+with open("path", "w") as file:
+    json.domp(data, file, indent)
+
+============================================
+
+load vs loads
+
+load  --> load from a file
+loads --> load from a string
+
+dump  --> to a file
+dumps --> to a string
+
+
+============================================
+
+
+--> when trying to dumb a pydantic model into a file
+--> we are gonna need a special flag taht will do that
+
+
+
+
+
+
+
+
+
+
+
