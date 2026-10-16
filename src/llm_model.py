@@ -10,6 +10,37 @@ class Model:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(model_name)
 
+
+    def build_prompt(self, chunks, obj):
+        #cond to check the correct obj
+        context = "\n\n".join(
+            f"source: {chunk['file_path']}\n"
+            f"content: {chunk['text']}\n"
+            for chunk in chunks
+        )
+
+
+        prompt = [
+        {
+            "role": "system",
+            "content": (
+                "Answer using only the provided context. "
+                'If the context is insufficient, say "I don\'t know."'
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"<context>\n{context}\n</context>\n\n"
+                    f"<question>\n{obj.question}\n</question>"
+                ),
+            },
+        ]
+            
+
+        return prompt
+   
+
     def generate(self, messages: list[dict]) -> str:
         inputs = self.tokenizer.apply_chat_template(
             messages,
@@ -37,3 +68,4 @@ class Model:
             generated_tokens,
             skip_special_tokens=True,
         )
+

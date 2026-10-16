@@ -19,7 +19,6 @@ from .data_models import (
 
 import json
 import tqdm
-from .utils import build_prompt
 
 
 
@@ -64,14 +63,10 @@ class RAG:
         data_path = Path(dataset_path)
         save_directory = Path(save_directory)
 
-        #cond to see if data_path is a file or not
-        #cond to see if k <= 0, rasie error
-
         with data_path.open("r", encoding="utf-8") as f:
             data = json.load(f)
 
         data = data.get("rag_questions", data.get("question"))
-        #learn this syntax
 
         result = []
         for q in tqdm.tqdm(data, desc="Searching Dataset"):
@@ -79,7 +74,6 @@ class RAG:
             result.append(res)
 
         a = StudentSearchResults(search_results=result, k=k)
-        
         save_directory.mkdir(parents=True, exist_ok=True)
         output_path = save_directory / (
             f"{data_path.stem}_search_results.json"
@@ -87,37 +81,11 @@ class RAG:
 
         with output_path.open("w", encoding="utf-8") as file:
             json.dump(a.model_dump(mode='json'), file, indent=4)
-        
-
 
 
     def answer(self, query, k):
         chunks, search_result = self.search(query, k)
-        prompt = build_prompt(chunks, search_result)
-        #context = "\n\n".join(
-        #    f"source: {chunk['file_path']}\n"
-        #    f"content: {chunk['text']}"
-        #    for chunk in chunks
-        #)
-        
-        #prompt = [
-        #    {
-        #        "role": "system",
-        #        "content": (
-        #            "Answer using only the provided context. "
-        #            'If the context is insufficient, say "I don\'t know."'
-        #        ),
-        #    },
-        #    {
-        #        "role": "user",
-        #        "content": (
-        #            f"<context>\n{context}\n</context>\n\n"
-        #            f"<question>\n{search_result.question}\n</question>"
-        #        ),
-        #    },
-        #]
-
-
+        prompt = self.model.build_prompt(chunks, search_result)
         generated_answer = self.model.generate(prompt)
 
         result = MinimalAnswer(
@@ -132,50 +100,21 @@ class RAG:
         input_path = Path(student_search_results_path)
         save_directory = Path(save_directory)
 
-        #cond to see if input_file is a file!
-
-        #upon opening the file, we need to check if the py_obj is the corerct one or not
+        #check correct obj when opening ht efile
         with input_path.open("r", encoding="utf-8") as f:
             data = StudentSearchResults.model_validate_json(f.read())
 
         results = []
-
         for item in tqdm.tqdm(data.search_results, desc="asnwering data set"):
             chunks = retrieve_chunks(item.question, data.k)
-            prompt = build_prompt(chunks, item)
-
-            #context = "\n\n".join(
-            #        f"source: {chunk['file_path']}\n"
-            #        f"content: {chunk['text']}\n"
-            #        for chunk in chunks
-            #    )
-
-            #prompt = [
-            #{
-            #    "role": "system",
-            #    "content": (
-            #        "Answer using only the provided context. "
-            #        'If the context is insufficient, say "I don\'t know."'
-            #        ),
-            #    },
-            #    {
-            #        "role": "user",
-            #        "content": (
-            #            f"<context>\n{context}\n</context>\n\n"
-            #            f"<question>\n{item.question}\n</question>"
-            #        ),
-            #    },
-            #]
-
+            prompt = self.model.build_prompt(chunks, item)
             answer_text = self.model.generate(prompt)
-            
             result = MinimalAnswer(
                 question_id=item.question_id,
                 question=item.question,
                 retrieved_sources=item.retrieved_sources,
                 answer=answer_text,
             )
-
             results.append(result)
 
         output = StudentSearchResultsAndAnswer(
@@ -188,8 +127,6 @@ class RAG:
 
         with output_path.open("w", encoding="utf-8") as f:
             f.write(output.model_dump_json(indent=4))
-
-        print(f"saved_answer to: {output_path}")
         
         return output
         
