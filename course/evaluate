@@ -1,0 +1,77 @@
+evaluate:
+
+measures how well your BM25 retrieval finds the correct source passages
+
+==> basically measure did we return the right thing??
+==> you bulid the semantic search and it feels promising, but you cannot prove whether results 
+==> are actually useful!
+
+
+
+
+1- lers understand recall@k:
+
+recall@k is a metric used to evaluate performance of recommendation systems, search engines, 
+and information retreival models
+
+it measures the propotions of relevent items that are successfully retrieved withint the top K results
+
+formula:
+
+    Recall@K = (Number of relevant items in top K results) / (Total number of relevant items)
+
+
+
+suppose you have 5 relevent items in to K results
+and your system returned 5 documnts, 3 of them are relevant and other 2 are uselss
+
+so 3/5 that 60% accuracy!
+
+Recall@5 = 3 / 5 = 0.6 (60%)
+
+
+--> it measure the relevant items:
+    of all files that should be returned how many of them have been found, 
+    how many did we actually find??
+
+
+
+the difference between recall@k and precision@k?
+
+
+precision@k:   how many of the top K results are relevant? precision
+recall@k:      how many relevent files made it to top k?  coverage
+
+increasing K usually improves recall and hurt precision!!
+
+
+
+recall@k is used when we missing a docuemnt is costly
+medical research, legal discovery, condidate sourcing
+
+--> also when you have a re-ranker or LLM that can filter, better to use recall@k
+--> and let the LLM filter irrelevant info!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

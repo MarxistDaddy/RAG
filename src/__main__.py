@@ -9,6 +9,8 @@ from .llm_model import Model
 
 from .data_models import (
     UnansweredQuestion,
+    AnsweredQuestion,
+    RagDataset,
     MinimalSource,
     MinimalSearchResults,
     StudentSearchResults,
@@ -129,6 +131,9 @@ class RAG:
             f.write(output.model_dump_json(indent=4))
         
         return output
+        
+    
+    def evaluate(self, )
         
         
 
