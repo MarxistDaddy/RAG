@@ -10,14 +10,13 @@ def retrieve_chunks(query: str, k: int):
     query_token = bm25s.tokenize([query])
 
     doc_ids, score = indexer.retrieve(query_token, k=k)
-
     corpus_path = index_path / "corpus.jsonl"
 
     with open(corpus_path, "r", encoding="utf-8") as file:
         records = [json.loads(line) for line in file]
 
-    chunks = []
 
+    chunks = []
     for doc_id, score in zip(doc_ids[0], score[0]):
         record = records[int(doc_id)]
         
@@ -31,11 +30,4 @@ def retrieve_chunks(query: str, k: int):
         })
 
     return chunks
-
-
-
-
-
-
-
 
