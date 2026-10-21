@@ -18,12 +18,7 @@ from .data_models import (
     MinimalAnswer,
 )
 
-from .evalute_helpers import (
-    normalize,
-    build_res_by_questions,
-    #source_matches,
-
-)
+from .evalute_helpers import normalize, build_res_by_questions, source_matches
 
 import json
 import tqdm
@@ -153,15 +148,19 @@ class RAG:
         
         k_values = [1, 3, 5]
         recall_totals = {k: 0.0 for k in k_values}
-        evaluted_questions = 0
+        evaluated_questions = 0
+
 
         for question in questions:
             expected_sources = question.get("sources", [])
             if not expected_sources:
                 continue
 
-            retrieved_sources = (
-                student_result = resultls_by_question.get(key)
+            key = normalize(question["question"])
+            student_result = results_by_question.get(key)
+
+            retrieved_srcs = (
+                student_result["retrieved_sources"]
                 if student_result is not None
                 else []
             )
@@ -169,27 +168,28 @@ class RAG:
             evaluated_questions += 1
 
             for k in k_values:
-                top_k = retieved_sources[:k]
+                top_k = retrieved_srcs[:k]
                 found = 0
 
                 for expected in expected_sources:
                     if any(source_matches(retrieved, expected) for retrieved in top_k):
                         found += 1
 
-                    recall_totals[k] += found / len(expected_sources)
+                recall_totals[k] += found / len(expected_sources)
 
-        if evaluted_questions == 0:
-            #raise value error
-            print("no question with referece sources eere found")
+        if evaluated_questions == 0:
+           #raise value error
+           print("no question with referece sources eere found")
 
         metrics = {}
-        print(f"evaluated questions: {evaluated_question}")
+        print(f"evaluated questions: {evaluated_questions}")
 
         for k in k_values:
             recall = recall_totals[k] / evaluated_questions
             metrics[f"recall@{k}"] = recall
             print(f"recall@{k}: {recall:.2%}")
 
+        #print(metrics)
         return metrics
                             
 
