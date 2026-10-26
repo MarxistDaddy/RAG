@@ -141,16 +141,19 @@ class RAG:
         with open(dataset_path, "r", encoding="utf-8") as f:
             dataset = json.load(f)
 
+        #get the student res: list of dict: q, q_id, resources: f_p, s_i, e_i
         student_result = student_data["search_results"]
+        #get the question of answered_data: questions!
         questions = dataset.get("rag_questions", dataset.get("question", dataset))
 
+        #restructe the student res, by question: rag_questions
         results_by_question = build_res_by_questions(student_result)
         
-        k_values = [1, 3, 5]
+        k_values = [1, 3, 5, 10]
         recall_totals = {k: 0.0 for k in k_values}
         evaluated_questions = 0
 
-
+        #for every question in question, which is a list of od dict 
         for question in questions:
             expected_sources = question.get("sources", [])
             if not expected_sources:
@@ -164,14 +167,16 @@ class RAG:
                 if student_result is not None
                 else []
             )
-
+    
+            #retireved_srcs = list of 5dict: fp, si, ei | student_res = whole dict obj by question
             evaluated_questions += 1
 
             for k in k_values:
-                top_k = retrieved_srcs[:k]
+                top_k = retrieved_srcs[:k] #get me the source from start to k: 1, 3, 5, 10
                 found = 0
 
-                for expected in expected_sources:
+                #for every src in qnswered sources! use source_matches!
+                for expected in expected_sources: 
                     if any(source_matches(retrieved, expected) for retrieved in top_k):
                         found += 1
 

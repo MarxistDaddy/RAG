@@ -1,0 +1,19 @@
+index caching:
+load the bm25 once and use across the queries instead of loading from disk every time!
+
+query caching:
+if you search for the same question again, return the previous result instead of retrieving the same result!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
