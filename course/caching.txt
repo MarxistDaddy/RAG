@@ -4,6 +4,91 @@ load the bm25 once and use across the queries instead of loading from disk every
 query caching:
 if you search for the same question again, return the previous result instead of retrieving the same result!
 
+----------------------
+
+how does caching actually work?
+
+every time i search, my program does this:
+
+load bm25 index from disk
+read corpus.jsonl from disk
+toknize the query and the search index
+return top k 
+
+what happens when you caches: query and index cahcing
+
+index_caching:
+load the bm25 onces, then reuse them for subsequent searches during the same python access!
+
+query_caching:
+if you search for how "how does vllm work?" with k=5, the program can return the stored result without performing bm25 retrieval again!
+
+
+---------
+
+1- index_loading caches were implmented here:
+
+load_index and load_corpus
+
+both f these function were wrapper int he lru_cache decorator and as a result, their output is now
+cached
+
+
+2- query cache
+
+it was implmented in the retrieve_chunks_cached
+
+-------
+
+how does the whole caching work?
+
+we call search:
+
+chunks = retrieve_chunks: retrieve topk docs for the query
+
+retrieve_chunks:
+    we check if the query is there and check that k isnt <= 0
+
+    then we call no retreive_chunks_chached(query.strip(), k, index_path) -> index_pth of bm25_inde
+    
+
+retreive_cached:
+    we create an object_path out of index_path
+
+    we load_index == load_index() -> lru_cache
+    indexer = load_index()
+    2- tokenize the query
+    quert_token = bm25.tokenize(query)
+
+    3- doc_ids, scores = indexer.retrieve(query_token, k)
+    we retrieve top 5 docts and their score using indxeer.retrieve
+
+    4- create the path of corpus
+    c_p = index_path/"sorpus.jsonl"
+
+    records = load_corpus
+
+
+the caching works like this:
+we first wrap retrieve_chunk_cached with lru, so that every
+---------------------
+
+caching will only be useful when we call search_dataset
+thats where we are gonna call search multiple times, otherwise, we are not gonna be able to 
+test search caching with the cli
+
+running search in the cli, means that we are restarting the process eveyr time
+and this not how lru works, lru saves the caches in the processes local memory
+it stores in the form a dict, roughly speaking
+
+so when the process is up, we can retrieved our cached data but when we restart the process we cant
+the only way to retrieve the data from search is to call search multiple times throught hte same process
+thats why it only works with search_dataset
+    
+
+
+
+
 
 
 

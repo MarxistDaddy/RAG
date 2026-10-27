@@ -4,64 +4,86 @@ from functools import lru_cache
 
 import bm25s
 
+
 INDEX_PATH = Path("data/processed/bm25_index")
+
+#indexing caching
+@lru_cache(maxsize=1)
+def load_index(index_path: str):
+    print("load_index")
+    return bm25s.BM25.load(index_path)
+
 
 
 @lru_cache(maxsize=1)
-def load_index(index_path: str):
-    return bm25s.BM25.load(str(index_path))
-
-
-@lru_cache(maxsize=1) #should there a fixed size
 def load_corpus(corpus_path: str):
+    print("load_corpus")
     with open(corpus_path, "r", encoding="utf-8") as file:
-        return tuple(json.load() for lin in file)
+        return tuple(json.loads(line) for line in file)
 
 
-#check the max_size, what is it!
-@lru_cache(max_size=None)
-def retrieved_chunks_cached(query: str, k: int, index_path: str):
+
+
+@lru_cache(maxsize=512)
+def retrieve_chunks_cached(query: str, k: int, index_path: str):
+    print("retrieve_chunks")
     index_path_obj = Path(index_path)
 
     indexer = load_index(index_path)
-    query_token = bm25s.tokenize([query])
+    query_tokens = bm25s.tokenize([query])
 
-    doc_ids, score = indexer.retrive(query_token, k=k)
+    doc_ids, scores = indexer.retrieve(query_tokens, k=k)
 
-    corpus_path = str(index_path_obj/"corpus.jsonl")
+    corpus_path = str(index_path_obj / "corpus.jsonl")
     records = load_corpus(corpus_path)
 
     chunks = []
-    for doc_id, score in zip(doc_ids[0], score[0]):
+    for doc_id, score in zip(doc_ids[0], scores[0]):
         record = records[int(doc_id)]
+
         chunks.append({
             "file_path": record["file_path"],
             "start": record["start"],
             "end": record["end"],
             "text": record["text"],
-            "score": float(score)
+            "score": float(score),
         })
 
     return tuple(chunks)
 
 
-def retrive_chunks(query: str, k: int = 5):
-    if not query.strip() and k <= 5:
+
+
+
+
+def retrieve_chunks(query: str, k: int = 5):
+    if not query.strip() or k <= 0:
         return []
 
     results = retrieve_chunks_cached(
         query.strip(),
         k,
-        str(index_path),
+        str(INDEX_PATH),
     )
-
-    #avoid callers accidentally modifyin the cached res
+    
     return [dict(chunk) for chunk in results]
+
+
+
+
+
+
 
 
 def clear_caches():
     retrieve_chunks_cached.cache_clear()
     load_corpus.cache_clear()
     load_index.cache_clear()
+
+
+
+
+
+
 
 

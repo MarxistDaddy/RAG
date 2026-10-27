@@ -1,0 +1,61 @@
+whats semantic search?
+
+my current search is lexical
+this means it looks for similar words and ranks documents based on their term statistics
+
+say that the document taht i have looks like this:
+    the scheduler assigns incoming requests to available workers?
+
+and the query looks like this:
+    how does vllm decide which machine to handle request
+
+bm25 may struggle because the question and documents use differnet words
+because thers no matchin words that are shared between the 2: doc and query
+
+--> semantic solve this
+semantic search tries to recognize that the two sentences express similar idea
+it does so by using embedding model
+
+
+how does semantic work?
+takes the doc and convert to a vector of number
+[0.12, -0.08, 0.41, ...]
+
+we do the same for the query and then we find the most similar embedding thats close to the query
+
+
+whats FAISS role?
+think of the system as three separete componenet
+1- embedding model: convert from text to vectors
+2- faiss: search for similar embeddings
+3- rag: maps the matching embedding vector IDs back to 
+
+-------------------------------------------------------------
+
+how to implement the semantic search?
+
+1- semantic embedding
+build a second indexer using lightway cpu model
+it convert each document chunk into a vector in FAISS
+
+2- hybrid retrieval
+search with both bm25 and semantic similarity, then combine their rankings into one list of results
+
+
+load bm25 and semantic into separate files in processed
+then in hybrid, get the results of both and merge them into a single one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

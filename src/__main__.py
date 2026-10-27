@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .indexing import index_files
 import bm25s
-from .retrieve import retrieve_chunks
+from .retrieve import retrieve_chunks, clear_caches
 from .llm_model import Model
 
 from .data_models import (
@@ -39,6 +39,7 @@ class RAG:
 
     def index(self, max_chunk_size: int = 2000):
         index_files(max_chunk_size, self.path)
+        clear_caches()        
         
 
     def search(self, query: str, k: int = 5):
@@ -55,6 +56,8 @@ class RAG:
             for chunk in chunks
         ]
         
+        print(f"\n\n\n\n{sources}")
+
         return chunks, MinimalSearchResults(
             question_id=question.question_id,
             question=question.question,
