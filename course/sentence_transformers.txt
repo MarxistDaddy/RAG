@@ -1,0 +1,83 @@
+sentence_transformers:
+
+this is a lib in pythong that takes: text, sentences and paragraphs and compute them to get a dense
+vectors/ (embedding)
+
+
+beofre sentence transfomers, we had BERT
+
+- BERT: excels at token level or cross-encoding
+
+
+
+
+
+
+
+
+===========================================================
+
+========================================================================
+PHASE 1: OFFLINE INDEXING (Building the Vector Space)
+========================================================================
+
+  [ Raw Documents / Code / PDF ]
+              │
+              ▼
+  ┌───────────────────────┐
+  │   Document Chunking   │  --> Splits text into 250-500 token blocks
+  └───────────────────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │  SentenceTransformer  │  --> Bi-Encoder encodes each chunk into a
+  │      (Model)          │      dense vector (e.g., 384D or 768D float array)
+  └───────────────────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │    Vector Database    │  --> Indexes vectors into an ANN graph (HNSW)
+  │ (ChromaDB / FAISS)    │      for sub-millisecond similarity search
+  └───────────────────────┘
+
+
+========================================================================
+PHASE 2: ONLINE RETRIEVAL & GENERATION (Executing the Query)
+========================================================================
+
+  [ User Query Prompt ]
+              │
+              ▼
+  ┌───────────────────────┐
+  │  SentenceTransformer  │  --> Embeds the query using the EXACT SAME
+  │      (Model)          │      model used during indexing
+  └───────────────────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │    Vector Database    │  --> Performs Cosine Similarity / Dot Product
+  │     ANN Search        │      against the indexed chunks
+  └───────────────────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │   Top-K Chunks        │  --> Extracts the most semantically relevant
+  │   Retrieved           │      context fragments
+  └───────────────────────┘
+              │
+              ▼
+  [ LLM Generation ]      --> LLM reads Context + Prompt -> Generates Answer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
