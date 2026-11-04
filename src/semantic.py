@@ -8,13 +8,16 @@ from sentence_transformers import SentenceTransformer
 
 
 CORPUS_PATH = Path("data/processed/bm25_index/corpus.jsonl")
+SEMANTIC_DIR = Path("data/processed/semantic_index")
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+
 
 @lru_cache(maxsize=1)
 def load_model():
     return SentenceTransformer(MODEL_NAME, device="cpu")
 
-def build_index()
+
+def build_semantic_index()
     #load the chunking fomr the json file
     with CORPUS_PATH.open("r", encoding="utf-8") as file:
         records = [json.loads(line) for line in file]
@@ -39,13 +42,96 @@ def build_index()
         device="cpu",
     )
 
-    
+    #we converted every chunk to a semantic vector, this is the semantic indexing 
+    #represnts the exact meaning of every chunk
+    #we can use these vectors to find the cloestest one semantically
     embeddings = np.asarray(embeddings, dtype=np.float32) #get this too!
 
+    
+    index = faiss.IndexFlatIP(embeddings.shape[1])
+    index.add(embeddings)
+
+    SEMANTIC_DIR.mkdir(parents=True, exist_ok=True)
+
+    faiss.write_index(index, str(SEMANTIC_DIR/"index.faiss"))
+
+    with (SEMANTIC_DIR/"index.faiss").open("w", encoding='utf-8') as file:
+        for record in records:
+            file.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    
+@lru_cache(maxsize=1)
+def load_semantic_index():
+    path = SEMANTIC_INDEX/"index.faiss"
+
+    #if not path.exists():
+        #raise filenotfound!   
+
+    return faiss.read_index(str(path))
+
+
+@lru_cache(maxsize=1)
+def load_semantic_corpus():
+    path = SEMANTIC_INDEX/"corpus.json"
+
+    with path.open("r", encoding="utf-8") as file:
+        return tuple(json.loads(line) for line in file)
 
 
 
 
+@lru_cache(maxsize=512)
+def semantic_search_cached(query, k):
+    model = load_model()
+    index = load_semantic_index()
+    records = load_semantic_corpus()
+
+    query_vector = model.encode(
+        [query],
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+        device="cpu",
+    )
+
+    query_vector = np.asarray(query_vector, dtype=np.float32)
+
+    k = min(k, index.ntotal)
+    scores, ids = index.search(query_vector, k)
+
+    results = []
+
+    for doc_id, score in zip(ids[0], scores[0]):
+        if doc_id <= 0:
+            continue
+
+        record = records[int(doc_id)]
+
+        results.append({
+            "file_path": record["file_path"],
+            "start": record["start"],
+            "end": record["end"],
+            "text": record["text"],
+            "score": float(score),
+        })
+
+    return tuple(results)
+
+
+
+def semantic_search(query: str, k: int):
+    if not query.strip() or k <= 0:
+        return []
+
+    results = semantic_search_cached(query.strip(), k)
+
+    return [dict(res) for res in results]
+
+
+
+def clear_semantic_cache():
+    semantic_search_cached.cache_clear()
+    load_semantic_index.cache_clear()
+    load_semantic_corpus.cache_clear()
 
 
 

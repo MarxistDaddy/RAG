@@ -1,0 +1,74 @@
+1- we start by creating smenatic vectors, we did this throught the sentence traformrs
+that has map built in it
+
+and through it we encoded our chunks and produced vectors for every chunk!
+
+2- we need to seach for similar vectors, thats what FAISS is about!
+
+S-T returns our matrix (N, 384)
+this represents the N size of text chunk embeddings that we have
+we beed a way to search through them!
+
+like say that we have size N of 1k, we need a fast way to search N embeddings and find the closest one semantically!
+
+3- search through the embeddings:
+
+FAISS is ultra-fast similarity search and clustering of dense vectors | open-source
+
+how does FAISS search:
+
+--> when a user types a query, we need to find the asntwe that clostest to it semantically
+faiss converts the question to a single demention of 384 vector coordinate and find the closest chunks
+it measures the distance between the query distance and every N chunk distance
+
+1- exact search (brute force):
+you comapre the query against all N vectors
+if the N size is small, this takes micro seconds
+but if the N size is like  millions, this brute force approach will take so much time!
+
+2- the solution to the brute force when size is too big
+FAISS uses clever indexing algorithms and compression techniques to search through massive vector spaces without scanning every single point individually
+
+--> indexing is the solution, we dont have to search every single vector to find answer for our query!
+
+
+3- how does indexign work?
+when we just FAISS, we dont dump our vectors straight to it, we index them first
+there different types of indexign depending on the size of the N
+
+so the process looks like this:
+
+1- take the matrix of (n, 384) and add to FAISS index: index.add(embeddings)
+
+2- write the index into a file on the disk so they become premininte: faiss.write_index(index, "name")
+
+3- query time:
+we encode the query into a vector, (1, 384)
+then we search for relevent chunks as an answer to this query
+faiss.search(query, k=5)
+
+and faiss instatnly hands back our top k answeres!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

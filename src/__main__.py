@@ -88,6 +88,30 @@ class RAG:
         with output_path.open("w", encoding="utf-8") as file:
             json.dump(a.model_dump(mode='json'), file, indent=4)
 
+    def build_semantic_index(self):
+        build_semantic_index()
+
+
+    def search_semantic(self, query: str, k: int = 5):
+        question = UnansweredQuestion(question=query)
+
+        chunks = semantic_search(question.question, k)
+
+        sources = [
+            MinimalSource(
+                file_path=chunk["file_path"],
+                first_character_index=chunk["start"],
+                last_character_index=chunk["end"],
+            )
+            for chunk in chunks
+        ]
+
+        return chunks, MinimalSearchResults(
+            question_id=question.question_id,
+            question=question.question,
+            retrieved_sources=sources
+        )
+
 
     def answer(self, query, k):
         chunks, search_result = self.search(query, k)

@@ -52,3 +52,4 @@ def load_and_split(files: list[pathlib.path], chunk_size: int) -> list[Document]
 
 
     return documents
+
