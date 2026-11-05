@@ -1,10 +1,16 @@
 import sys
 import fire
+import json
+import tqdm
+import bm25s
+
 from pathlib import Path
 
 from .indexing import index_files
-import bm25s
 from .retrieve import retrieve_chunks, clear_caches
+from .evalute_helpers import normalize, build_res_by_questions, source_matches
+from .semantic import build_semantic_index, search_semantic, clear_semantic_cache
+from .hybrid import search_hybrid
 from .llm_model import Model
 
 from .data_models import (
@@ -17,11 +23,6 @@ from .data_models import (
     StudentSearchResultsAndAnswer,
     MinimalAnswer,
 )
-
-from .evalute_helpers import normalize, build_res_by_questions, source_matches
-
-import json
-import tqdm
 
 
 
@@ -40,6 +41,7 @@ class RAG:
     def index(self, max_chunk_size: int = 2000):
         index_files(max_chunk_size, self.path)
         clear_caches()        
+        clear_semantic_cache()
         
 
     def search(self, query: str, k: int = 5):
@@ -56,7 +58,7 @@ class RAG:
             for chunk in chunks
         ]
         
-        print(f"\n\n\n\n{sources}")
+        #print(f"\n\n\n\n{sources}")
 
         return chunks, MinimalSearchResults(
             question_id=question.question_id,
@@ -64,6 +66,7 @@ class RAG:
             retrieved_sources=sources
         )
     
+
 
     def search_dataset(self, dataset_path: str, k: int, save_directory: str="data/output"):
         data_path = Path(dataset_path)
@@ -88,18 +91,39 @@ class RAG:
         with output_path.open("w", encoding="utf-8") as file:
             json.dump(a.model_dump(mode='json'), file, indent=4)
 
-    def build_semantic_index(self):
+
+    def semantic_index(self):
         build_semantic_index()
 
 
-    def search_semantic(self, query: str, k: int = 5):
+    def semantic_search(self, query: str, k: int = 5):
         question = UnansweredQuestion(question=query)
 
-        chunks = semantic_search(question.question, k)
+        chunks = search_semantic(question.question, k)
 
         sources = [
             MinimalSource(
                 file_path=chunk["file_path"],
+                first_character_index=chunk["start"],
+                last_character_index=chunk["end"],
+            )
+            for chunk in chunks
+        ]
+
+        return chunks, MinimalSearchResults(
+            question_id=question.question_id,
+            question=question.question,
+            retrieved_sources=sources
+        )
+
+
+    def hybrid_search(self, query: str, k: int = 5):
+        question = UnansweredQuestion(question=query)
+        chunks = search_hybrid(question.question, k)
+
+        sources = [
+            MinimalSource(
+                file_path = chunk["file_path"],
                 first_character_index=chunk["start"],
                 last_character_index=chunk["end"],
             )
@@ -118,12 +142,13 @@ class RAG:
         prompt = self.model.build_prompt(chunks, search_result)
         generated_answer = self.model.generate(prompt)
 
-        result = MinimalAnswer(
+        return MinimalAnswer(
             question_id=search_result.question_id,
             question=search_result.question,
             retrieved_sources=search_result.retrieved_sources,
             answer=generated_answer
         )
+
 
 
     def answer_dataset(self, student_search_results_path, save_directory="data/output"):

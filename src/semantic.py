@@ -1,9 +1,9 @@
 import json
-from functools import lru_cache as lru
+from functools import lru_cache
 from pathlib import Path 
 
 import faiss
-import numpy as num
+import numpy as np
 from sentence_transformers import SentenceTransformer
 
 
@@ -17,7 +17,7 @@ def load_model():
     return SentenceTransformer(MODEL_NAME, device="cpu")
 
 
-def build_semantic_index()
+def build_semantic_index():
     #load the chunking fomr the json file
     with CORPUS_PATH.open("r", encoding="utf-8") as file:
         records = [json.loads(line) for line in file]
@@ -29,7 +29,7 @@ def build_semantic_index()
     
     model = load_model()
 
-    #extract the text/docuemnts fromt hsi json file
+    #extract the text/docuemnts from thisjson file
     texts = [record["text"] for record in records]
     
     #batching instead of treating 1k cgybjs at time, we treat 32 doc every time
@@ -55,14 +55,16 @@ def build_semantic_index()
 
     faiss.write_index(index, str(SEMANTIC_DIR/"index.faiss"))
 
-    with (SEMANTIC_DIR/"index.faiss").open("w", encoding='utf-8') as file:
-        for record in records:
-            file.write(json.dumps(record, ensure_ascii=False) + "\n")
+    #with (SEMANTIC_DIR/"index.faiss").open("w", encoding='utf-8') as file:
+    #    for record in records:
+    #        file.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    clear_semantic_cache()
 
     
 @lru_cache(maxsize=1)
 def load_semantic_index():
-    path = SEMANTIC_INDEX/"index.faiss"
+    path = SEMANTIC_DIR/"index.faiss"
 
     #if not path.exists():
         #raise filenotfound!   
@@ -72,9 +74,7 @@ def load_semantic_index():
 
 @lru_cache(maxsize=1)
 def load_semantic_corpus():
-    path = SEMANTIC_INDEX/"corpus.json"
-
-    with path.open("r", encoding="utf-8") as file:
+    with CORPUS_PATH.open("r", encoding="utf-8") as file:
         return tuple(json.loads(line) for line in file)
 
 
@@ -101,7 +101,7 @@ def semantic_search_cached(query, k):
     results = []
 
     for doc_id, score in zip(ids[0], scores[0]):
-        if doc_id <= 0:
+        if doc_id < 0:
             continue
 
         record = records[int(doc_id)]
@@ -118,7 +118,7 @@ def semantic_search_cached(query, k):
 
 
 
-def semantic_search(query: str, k: int):
+def search_semantic(query: str, k: int=5):
     if not query.strip() or k <= 0:
         return []
 

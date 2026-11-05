@@ -1,0 +1,143 @@
+whats RRF? reciprocal rank fusion
+
+whats the purpose of hybrid_search?
+
+hybrid retrival exist because neither lyxical or semantic search can cover all the things needed
+each method has a structural blind spot, so we combine the 2 methods to achieve high precision in search retrieval!
+
+1- BM25 failuers:
+BM25 fails to grasp the context, it treats words as arbitrary strings without undestanding its underlying meaning
+users rarely use queries that contain the exact terminologt that exists in the documents
+and bm25 takes the docs and treat the words inside independetly, failing to grasp the context
+
+
+2- S-T
+a- searching for exact name, like: brand id, certain errors and so on
+models often fail to indentifies the exact product ID
+like if we searching for a specific error when debuggin our project, "pointer null error 404"
+the model might colapse this error into fuzzy clusterss
+
+so single-word queries or exact phrase lookups can produce noisy vectors
+pulling in broad thematic matches rather than retrieving the exact words
+
+
+
+b- out-of-vocabulary
+this is means taht when we pass a word that doesnt exist int he model pre-trained data
+so these tokens are recognized in the vectors natively
+
+
+
+
+--> how does hybrid retrieval solve these blind spots?
+by runnin bm25 and semantic vectors in parallel and combining their outcomes via fusion algorithms
+like RRF or score normalization. hybrid search makes sure to cover the entire spectrum of queries
+
+exacty match query: error 404 setup.py --> hybrid uses bm25 for this
+conceptual query: why is my app running so slow --> hybrid relies on semantic search for this
+mixed intent: fixing null pointer in this project? --> bm25 identifies the exact project codexion
+                                                       while semantic looks for solutions
+
+
+==> it basically comes down to the the fact that, do we need to retrieve the exact match or a concpetual match!
+
+
+===================================================================================
+
+how does RRF work?
+
+its an algorithm that combines multiple ranked lists into a single unified list
+
+basically the scoes of bm25 and semantic search differ drastically
+
+bm25 --> 12.4, 8.1, 3.5 |   positive scores based on terms frequencies
+vectors --> Based on cosine similarity or dot product (bounded decimals, usually between -1.0 and 1.0, or 0.0 and 1.0
+
+we cannot just add the scores together: 12.4  +  0.84   | mathematically impossible
+score normalization is different because differnet quries produce drastically different scores
+
+
+the formula:
+    
+                1 == fraction
+    points = ----------
+                60 + rank of doc
+
+fraction ==  is just a way to turn rank into points
+60 == just a buffer to keep the math stable
+rank == position of the doc
+
+lets say that we have 2 docs:
+    doc A and doc B
+
+bm25 = this is my first choice
+vector = this is my third choice
+
+1 / (60 + 1) = 0.0164
+1 / (60 + 3) = 0.0159
+
+0.0164 + 0.0159 = 0.0323
+
+for doc B
+bm25 = second choice
+vector == 0 , never heard of it
+
+BM25 Score: 1 / (60 + 2) = 0.0161}
+Vector Score: 0
+
+0.0161 + 0 = 0.0161} total score.
+
+
+===> so doc A scored a better poinr
+
+0.0323 >> 0.0161
+we are gonna go with doc A
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
