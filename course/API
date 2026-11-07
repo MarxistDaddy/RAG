@@ -1,0 +1,216 @@
+API course:
+
+
+
+1- interfaces:
+are for users when using a device like an ipad
+
+api is for prorgammers, its an interface for for application programming
+api is like a contrat, it gives instruction through the interface onhow to use the program
+
+APIs is moslty used to explain web-based APIs
+whenever you head API, most likely think of web-based API
+
+
+moder web APIs predomenitaly rely in HTTP protocol, using a client-server archetecture
+
+
+
+
+
+2- remote APIs/interfaces
+
+controller, like the one we use for drones, tv, whatever
+these are remove interfaces to control a remote object
+
+in programming:
+when we dont have space on our device
+computional power
+
+back then it was difficult to implmenet the api, its was a nightmare
+then REST came and saved the day.
+REST == representialn state transfer
+
+
+3- how does the web work?
+
+browser is a web client, we use to connect to the server
+to connect tot he server, we need to pass the URL, which relies on HTTP protocol
+
+=============================================================
+learnign path for API for RAG:
+
+API and HTTP:
+    clienet - server
+    whats an API
+    whats an endpoint
+    HTTP request and response
+    GET vs POST
+    JSON
+
+CURL + FASTAPI:
+    what curl does
+    how to send a request
+    how to create fast api app
+    Uvicormn: server that runs fastapi
+    how to define endpoints
+    how to receive json and return json
+
+build small API:
+    GET: health
+    POST: search
+    POST: answer
+
+=============================================================
+
+1- client-server archetecture
+
+this architecture is the foundation of APIs
+it dictates how 2 independent systems find, talk and exchange data with each other!
+
+API exists between the client and the server, it mediates and facilates the communication!
+
+a- the client:
+the client is any application or user-interfaces and data or computation performed
+it starts the conversation by sending an HTTP request
+
+examples:
+    react single page on the web
+    IOS mobile app
+    CLI script
+
+--> these examples right here, dont know how the program works under the hood, it only knows the API rule to send requests
+
+
+b- the server:
+the server is the backend infrastructure, such as fastapi
+
+examples:
+    python/fastapi app
+    node.js api
+    database server
+
+--> these examples listen to incoming requests, validates them, perform the task and returns the requested data
+
+
++-------------------+                          +-------------------+
+|      Client       |                          |      Server       |
+| (Frontend / App)  | ----(HTTP Request)-----> |  (FastAPI Backend)|
+|                   |                          |                   |
+|                   | <---(JSON Response)----- |                   |
++-------------------+                          +-------------------+
+             \                                    /
+              \---[ Connected via API Contract ]-/
+
+
+
+==> ???
+
+
+
+2- REST API:
+REST is an architecture style that operates strictly on the traditional HTTP request-response cycle
+with JSON as the standard language for data exchange
+
+to qualify as REST API, it must adher to these constrains:
+statelessness: 
+    every request from the client must be self-contained 
+    this means it must contain all the info the server needs to send back requested data
+    api doesnt remember previous requests, every request must be self-contained
+
+standard HTTP methods (verbs):
+    GET:            retrieve data
+    POST:           create new data
+    PUT / PATCH:    updata data
+    DELETE:         remove data
+
+
+3- resource based URL: endpoints as nouns
+A- what are endpionts?
+
+endpoint is the shipping address
+    the url i send consits of 2 things:
+        a- where im sending the request
+        b- the source im targeting in that address
+
+the request:
+    we the HTTP request using the curl command
+
+
+B- CURL: (CLIENT URL REQUEST LIBRARY)
+
+this commands allows you to send data over urls using the command line
+you can upload and download GETs and POSTs 
+
+curl supports multiple protocols, one of which is HTTP
+so we can send and recevei data by sending post and get using the curl command
+
+==> one of biggests strength points of curl is this command is scruptable
+==> it can integrated in pipes like ci/cd, scripts or automation tools
+
+--> CURL + REST API
+we use curl to execute the HTTP protocol
+we are gonna pass endpoints, headers, methods and json payload!
+
+1- fetch data from rest api using request
+
+curl -X GET "http://aaa.com/books/1"
+
+    - curl -X GET (get optional since its default) 
+    - url stops at .com
+    - what comes after .com: /books/1 this is the endpoint: resource we want to interact with
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
