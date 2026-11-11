@@ -161,6 +161,41 @@ curl -X GET "http://aaa.com/books/1"
     - what comes after .com: /books/1 this is the endpoint: resource we want to interact with
 
 
+2- post data
+
+curl -X POST [URL/ENDPOINT] \
+  -H "Content-Type: application/json" \
+  -d '{"key": "value"}'
+
+
+-X post: URL + ENDPOINT
+-H header: identify the content type that you are gonna post
+-d content of the data
+
+
+
+-------------------
+
+how everyhting comes together:
+
+API: the contract. it defines how data is transformed between client and server
+
+HTTP protocol: web language, dectiates how data is trasnformed on the web using verb aactions
+based on: request/response, headers, status code: 200, 404...
+
+rest: specific archetcture built on top of the http
+mandates that you api must be stateless, organize endpoints (resources nouns)
+typically exchanges data using JSON, but yaml and other formatting files can used
+
+curl: cli used to manually build, send, and test these HTTP requests
+
+===============================================================================
+
+FASTAPI:
+
+python web framework designed for building api
+
+
 
 
 
