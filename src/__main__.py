@@ -25,7 +25,6 @@ from .data_models import (
 )
 
 
-
 class RAG:
     def __init__(self, data_path="data/raw/vllm-0.10.1"):
         self.path = Path(data_path)
@@ -57,8 +56,6 @@ class RAG:
             )
             for chunk in chunks
         ]
-        
-        #print(f"\n\n\n\n{sources}")
 
         return chunks, MinimalSearchResults(
             question_id=question.question_id,

@@ -1,10 +1,10 @@
 import json
+import bm25s
+
 from pathlib import Path
 from functools import lru_cache
 
-import bm25s
-
-
+#redundant
 INDEX_PATH = Path("data/processed/bm25_index")
 
 #indexing caching
@@ -14,7 +14,6 @@ def load_index(index_path: str):
     return bm25s.BM25.load(index_path)
 
 
-
 @lru_cache(maxsize=1)
 def load_corpus(corpus_path: str):
     print("load_corpus")
@@ -22,13 +21,12 @@ def load_corpus(corpus_path: str):
         return tuple(json.loads(line) for line in file)
 
 
-
-
 @lru_cache(maxsize=512)
 def retrieve_chunks_cached(query: str, k: int, index_path: str):
     print("retrieve_chunks")
+    #redundant
+    
     index_path_obj = Path(index_path)
-
     indexer = load_index(index_path)
     query_tokens = bm25s.tokenize([query])
 
@@ -52,10 +50,6 @@ def retrieve_chunks_cached(query: str, k: int, index_path: str):
     return tuple(chunks)
 
 
-
-
-
-
 def retrieve_chunks(query: str, k: int = 5):
     if not query.strip() or k <= 0:
         return []
@@ -69,21 +63,8 @@ def retrieve_chunks(query: str, k: int = 5):
     return [dict(chunk) for chunk in results]
 
 
-
-
-
-
-
-
 def clear_caches():
     retrieve_chunks_cached.cache_clear()
     load_corpus.cache_clear()
     load_index.cache_clear()
-
-
-
-
-
-
-
 

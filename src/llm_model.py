@@ -49,9 +49,9 @@ class Model:
             return_tensors="pt",
             enable_thinking=False,
         )
-
     
         input_ids = inputs["input_ids"]
+        #print the output of the inpus
     
         outputs = self.model.generate(
             input_ids=input_ids,

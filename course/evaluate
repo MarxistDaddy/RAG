@@ -7,8 +7,6 @@ measures how well your BM25 retrieval finds the correct source passages
 ==> are actually useful!
 
 
-
-
 1- lers understand recall@k:
 
 recall@k is a metric used to evaluate performance of recommendation systems, search engines, 

@@ -1,0 +1,91 @@
+transformers:
+
+
+transformers is neural network archetecture thats based on atention is all you need
+go to archetectur for deep learning models, powering text generator models like:
+chatgpt, gemeni, 
+
+text generator models, operate on the principal of next-token prediction
+given a text from the user, the model will try to predict the next probable token
+transformers power come in their use of selfattention mechanism
+
+
+text-generation models have 3 components:
+
+- embedding:
+text -> tokens -> vectors of token_ids that hold the semantic meaning -> this is what we call 
+embedding
+
+
+
+
+- traformers block:
+is the fundemental block of the model that processes and trasformes the input data
+each block contains:
+    - attention mechanism:
+    the core component that allows tokens to communicate with other tokens
+    capturing contextual informations and relationships betweem words
+
+    - MLP: multi later perceptor
+    a feed forward that operates on each token independently!
+
+selfattention: is about routing information between tokens
+MLP is about to refine each token's representation!
+
+
+- Output Probabilities:
+the final layer of softmax layers transformers the processed embeddings into probabilities
+enbaling the model to take predicitons about the next token in a sequence!
+
+
+===================================================================
+
+
+1- embedding:
+
+let say that you want to generate a text usign the transformer model
+our prompt might look like this:
+    "data visualization empowers user to"
+
+this input needs to be converted into a format that the model can understand
+this is where embedding comes in
+
+1: tokenization:
+we split our text into tokens with corresponding IDs
+
+2- token embedding:
+a small model like chatdpt 2
+represents each token into a 768 dimentional vector
+dimentions of the vector depends on the model
+but basically: models create a vector with dimentiosn to represnet each token token
+
+these embedding vectors are then stored in a matrix of shape
+these extensive matrix allows the model to assign semantic meaning to each token
+
+in the sense that tokens with similar meaning are place closer to each other int he high dimentional space
+while disimilar are placed further away from each other
+
+
+each token -> dimentional vectors -> models assign meanisng to embedding of each 
+tokens with similar meanign are placed closer to each other
+other far away from each other!
+
+3- 
+
+
+
+===================================================================
+
+
+transformer block:
+
+the self attention mechanism enables the model to relationship among tokens in sequence
+so each token's repsentation is influenced by others
+multiple attention heads allow the model to consider these relationships from different prespective
+
+1- query, key and value metrics
+
+
+
+
+

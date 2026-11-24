@@ -27,6 +27,8 @@ def index_files(chunk_size, path):
     documents = load_and_split(retrieved_files, chunk_size)
     print(f"doc --> {documents[0]}")
     content, metadata = get_metadata(documents)
+
+    #jsonl convert the indexed docs to a jsonl files!
     records = [{**meta, "text": txt} for meta, txt in zip(metadata, content)]
     
     corpus_tokens = bm25s.tokenize(content)
