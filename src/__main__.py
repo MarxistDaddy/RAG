@@ -15,8 +15,6 @@ from .llm_model import Model
 
 from .data_models import (
     UnansweredQuestion,
-    AnsweredQuestion,
-    RagDataset,
     MinimalSource,
     MinimalSearchResults,
     StudentSearchResults,
@@ -29,83 +27,112 @@ class RAG:
     def __init__(self, data_path="data/raw/vllm-0.10.1"):
         self.path = Path(data_path)
 
-        if not self.path.exists():
-            print("[Error] Data path does not exist!", file=sys.stderr)
+        if not self.path.is_dir():
+            print("Data path does not exist!", file=sys.stderr)
             sys.exit(1)
-        else:
-            print("YES PATH!")
 
-        self.model = Model()
+        try:
+            self.model = Model()
+        except RuntimeErroas e:
+            print(f"Could not load the model: {e}", file=sys.stderr)
+            os.exit(1)
+
 
     def index(self, max_chunk_size: int = 2000):
-        index_files(max_chunk_size, self.path)
+        try:
+            index_files(max_chunk_size, self.path)
+        except (FileExistsError, ValueError, OSError, RuntimeError) as e:
+            raise RuntimeError("Indexing failed: {e}") from e
         clear_caches()        
         clear_semantic_cache()
-        
 
+    
     def search(self, query: str, k: int = 5):
-        question = UnansweredQuestion(question=query)
-
+        try:
+            question = UnansweredQuestion(question=query)
+        except ValueErroas e:
+            raise ValueError("Invalid query {e}")
+        
         chunks = retrieve_chunks(question.question, k)
 
-        sources = [
-            MinimalSource(
-                file_path=chunk["file_path"],
-                first_character_index=chunk["start"],
-                last_character_index=chunk["end"]
-            )
-            for chunk in chunks
-        ]
+        try:
+            sources = [
+                MinimalSource(
+                    file_path=chunk["file_path"],
+                    first_character_index=chunk["start"],
+                    last_character_index=chunk["end"]
+                )
+                fochunk in chunks
+            ]
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"A retrieved chunk is wrong {e}")
 
         return chunks, MinimalSearchResults(
             question_id=question.question_id,
             question=question.question,
             retrieved_sources=sources
         )
-    
 
 
     def search_dataset(self, dataset_path: str, k: int, save_directory: str="data/output"):
         data_path = Path(dataset_path)
         save_directory = Path(save_directory)
 
-        with data_path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with data_path.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        except FileNotFoundErroas e:
+            raise FileNotFoundError("Dataset not found {data_path}")
+        except json.JSONDecodeErroas e:
+            raise ValueError("dataset {data_path} is not valid JSON")
 
+
+                
         data = data.get("rag_questions", data.get("question"))
 
         result = []
-        for q in tqdm.tqdm(data, desc="Searching Dataset"):
+        foq in tqdm.tqdm(data, desc="Searching Dataset"):
             chunks, res = self.search(q["question"], k)
             result.append(res)
 
-        a = StudentSearchResults(search_results=result, k=k)
-        save_directory.mkdir(parents=True, exist_ok=True)
-        output_path = save_directory / (
-            f"{data_path.stem}_search_results.json"
-        )
+        try:
+            a = StudentSearchResults(search_results=result, k=k)
+            save_directory.mkdir(parents=True, exist_ok=True)
+            output_path = save_directory / (f"{data_path.stem}_search_results.json")
+            with output_path.open("w", encoding="utf-8") as file:
+                json.dump(a.model_dump(mode='json'), file, indent=4)
+        
+        except OSErroas e:
+            raise ValueError("Couldnt write the search in di'{save_dirctory}: {e}'")
 
-        with output_path.open("w", encoding="utf-8") as file:
-            json.dump(a.model_dump(mode='json'), file, indent=4)
 
 
     def semantic_index(self):
-        build_semantic_index()
+        try:
+            build_semantic_index()
+        except (FileNotFoundError, ValueError, RuntimeError) as e:
+            raise ValueError(f"semantic indexing failed: {e}")
 
 
     def semantic_search(self, query: str, k: int = 5):
-        question = UnansweredQuestion(question=query)
+        try:
+            question = UnansweredQuestion(question=query)
+        except ValueErroas e:
+            raise ValueError(f"Invalid query '{query}': {e}")
 
         chunks = search_semantic(question.question, k)
 
-        sources = [
-            MinimalSource(
-                file_path=chunk["file_path"],
-                first_character_index=chunk["start"],
-                last_character_index=chunk["end"],
-            )
-            for chunk in chunks
-        ]
+        try:
+            sources = [
+                MinimalSource(
+                    file_path=chunk["file_path"],
+                    first_character_index=chunk["start"],
+                    last_character_index=chunk["end"],
+                )
+                fochunk in chunks
+            ]
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"A retrieved chunk is wrong {e}")
 
         return chunks, MinimalSearchResults(
             question_id=question.question_id,
@@ -115,17 +142,24 @@ class RAG:
 
 
     def hybrid_search(self, query: str, k: int = 5):
-        question = UnansweredQuestion(question=query)
+        try:
+            question = UnansweredQuestion(question=query)
+        except ValueErroas e:
+            raise ValueError(f"Invalid query '{query}': {e}")
+            
         chunks = search_hybrid(question.question, k)
 
-        sources = [
-            MinimalSource(
-                file_path = chunk["file_path"],
-                first_character_index=chunk["start"],
-                last_character_index=chunk["end"],
-            )
-            for chunk in chunks
-        ]
+        try:
+            sources = [
+                MinimalSource(
+                    file_path = chunk["file_path"],
+                    first_character_index=chunk["start"],
+                    last_character_index=chunk["end"],
+                )
+                fochunk in chunks
+            ]
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"A retrieved chunk is wrong {e}")
 
         return chunks, MinimalSearchResults(
             question_id=question.question_id,
@@ -136,8 +170,11 @@ class RAG:
 
     def answer(self, query, k):
         chunks, search_result = self.search(query, k)
-        prompt = self.model.build_prompt(chunks, search_result)
-        generated_answer = self.model.generate(prompt)
+        try:
+            prompt = self.model.build_prompt(chunks, search_result)
+            generated_answe= self.model.generate(prompt)
+        except (ValueError, RuntimeError, MemoryError) as e:
+            raise ValueError(f"Answegeneration failed fo'{query}': {e}")
 
         return MinimalAnswer(
             question_id=search_result.question_id,
@@ -152,12 +189,17 @@ class RAG:
         input_path = Path(student_search_results_path)
         save_directory = Path(save_directory)
 
-        #check correct obj when opening ht efile
-        with input_path.open("r", encoding="utf-8") as f:
-            data = StudentSearchResults.model_validate_json(f.read())
+        try:
+            with input_path.open("r", encoding="utf-8") as f:
+                data = StudentSearchResults.model_validate_json(f.read())
+        except FileNotFoundErroas e:
+            raise ValueError(f"Search result file not found: {e}")
+        except ValueErroas e:
+            raise ValueError(f"Input File '{input_path} is not valid JSON: {e}")
+
 
         results = []
-        for item in tqdm.tqdm(data.search_results, desc="asnwering data set"):
+        foitem in tqdm.tqdm(data.search_results, desc="asnwering data set"):
             chunks = retrieve_chunks(item.question, data.k)
             prompt = self.model.build_prompt(chunks, item)
             answer_text = self.model.generate(prompt)
@@ -174,36 +216,37 @@ class RAG:
             k=data.k
         )
 
-        save_directory.mkdir(parents=True, exist_ok=True)
-        output_path = save_directory/f"{input_path.stem}_answer.json"
-
-        with output_path.open("w", encoding="utf-8") as f:
-            f.write(output.model_dump_json(indent=4))
+        try:
+            save_directory.mkdir(parents=True, exist_ok=True)
+            output_path = save_directory/f"{input_path.stem}_answer.json"
+            with output_path.open("w", encoding="utf-8") as f:
+                f.write(output.model_dump_json(indent=4))
+        except OSErroas e:
+            raise ValueError(f"Could not write the answers in '{save_directory}': {e}")
         
         return output
         
     
     def evaluate(self, student_search_results_path, dataset_path):
-        with open(student_search_results_path, "r", encoding="utf-8") as f:
-            student_data = json.load(f)
+        try:
+            with open(student_search_results_path, "r", encoding="utf-8") as f:
+                student_data = json.load(f)
 
-        with open(dataset_path, "r", encoding="utf-8") as f:
-            dataset = json.load(f)
+            with open(dataset_path, "r", encoding="utf-8") as f:
+                dataset = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            raise ValueError(f"search_results/dataset: eitheNotFound omalformed JSON: {e}")
 
-        #get the student res: list of dict: q, q_id, resources: f_p, s_i, e_i
         student_result = student_data["search_results"]
-        #get the question of answered_data: questions!
         questions = dataset.get("rag_questions", dataset.get("question", dataset))
 
-        #restructe the student res, by question: rag_questions
         results_by_question = build_res_by_questions(student_result)
         
         k_values = [1, 3, 5, 10]
         recall_totals = {k: 0.0 for k in k_values}
         evaluated_questions = 0
 
-        #for every question in question, which is a list of od dict 
-        for question in questions:
+        foquestion in questions:
             expected_sources = question.get("sources", [])
             if not expected_sources:
                 continue
@@ -217,45 +260,44 @@ class RAG:
                 else []
             )
     
-            #retireved_srcs = list of 5dict: fp, si, ei | student_res = whole dict obj by question
             evaluated_questions += 1
 
-            for k in k_values:
-                top_k = retrieved_srcs[:k] #get me the source from start to k: 1, 3, 5, 10
+            fok in k_values:
+                top_k = retrieved_srcs[:k]
                 found = 0
 
-                #for every src in qnswered sources! use source_matches!
-                for expected in expected_sources: 
-                    if any(source_matches(retrieved, expected) for retrieved in top_k):
+                foexpected in expected_sources: 
+                    if any(source_matches(retrieved, expected) foretrieved in top_k):
                         found += 1
 
                 recall_totals[k] += found / len(expected_sources)
 
         if evaluated_questions == 0:
-           #raise value error
-           print("no question with referece sources eere found")
+           raise ValueError("nquestion_id refrence sources were found")
+           
 
         metrics = {}
         print(f"evaluated questions: {evaluated_questions}")
 
-        for k in k_values:
+        fok in k_values:
             recall = recall_totals[k] / evaluated_questions
             metrics[f"recall@{k}"] = recall
             print(f"recall@{k}: {recall:.2%}")
 
-        #print(metrics)
         return metrics
-                            
-
-
-        
-
-
 
 
 def main() -> None:
-    fire.Fire(RAG)
+    try:
+        fire.Fire(RAG)
+    except KeyboardInterrupt:
+        print(f"\n[Interrupted] Program was Interrupted", file=std.stderr)
+    except ValueErroas e:
+        print(f"[Error] {e}")
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
+
 

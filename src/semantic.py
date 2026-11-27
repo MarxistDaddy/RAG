@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from pathlib import Path 
+from pathlib import Path
 
 import faiss
 import numpy as np
@@ -14,46 +14,56 @@ MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
 @lru_cache(maxsize=1)
 def load_model():
-    return SentenceTransformer(MODEL_NAME, device="cpu")
+    try:
+        return SentenceTransformer(MODEL_NAME, device="cpu")
+    except Exception as e:
+        raise ValueError(f"Could not load the model '{MODEL_NAME}': {e}")
 
 
 def build_semantic_index():
     #load the chunking fomr the json file
-    with CORPUS_PATH.open("r", encoding="utf-8") as file:
-        records = [json.loads(line) for line in file]
+    try:
+        with CORPUS_PATH.open("r", encoding="utf-8") as file:
+            records = [json.loads(line) for line in file]
+    except FileNotFoundError as e:
+        raise ValueError(f"corpus file is not found: {e}") from e
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        raise ValueError(f"Corpus file '{CORPUS_PATH}' is corrupted: {e}")
+    
+    if not records:
+        raise ValueError(f"corupos file is empty!")
 
-    #cond to check if file exists or not!
-    
-    #if not records:
-    #       raise error 
-    
-    model = load_model()
-
-    #extract the text/docuemnts from thisjson file
-    texts = [record["text"] for record in records]
-    
-    #batching instead of treating 1k cgybjs at time, we treat 32 doc every time
-    embeddings = model.encode(
-        texts,
-        batch_size=32,
-        convert_to_numpy=True,
-        normalize_embeddings=True,
-        show_progress_bar=True,
-        device="cpu",
-    )
+    try:
+        model = load_model()
+        texts = [record["text"] for record in records]
+        
+        embeddings = model.encode(
+            texts,
+            batch_size=32,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+            show_progress_bar=True,
+            device="cpu",
+        )
+    except Exception as e:
+        raise ValueError(f"embedding the corpus failed: {e}") from e
 
     #we converted every chunk to a semantic vector, this is the semantic indexing 
     #represnts the exact meaning of every chunk
     #we can use these vectors to find the cloestest one semantically
-    embeddings = np.asarray(embeddings, dtype=np.float32) #get this too!
-
     
-    index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings)
+    try:
+        embeddings = np.asarray(embeddings, dtype=np.float32) #get this too!
+        index = faiss.IndexFlatIP(embeddings.shape[1])
+        index.add(embeddings)
+    except (IndexError, ValueError, TypeError, RuntimeError) as e:
+        raise ValueError(f"Could not build the FAISS index from the embeddins: {e}")
 
-    SEMANTIC_DIR.mkdir(parents=True, exist_ok=True)
-
-    faiss.write_index(index, str(SEMANTIC_DIR/"index.faiss"))
+    try:
+        SEMANTIC_DIR.mkdir(parents=True, exist_ok=True)
+        faiss.write_index(index, str(SEMANTIC_DIR/"index.faiss"))
+    except Exception as e:
+        raise ValueError(f"Could not save the FAISS index in '{SEMANTIC_DIR}': {e}")
 
     #with (SEMANTIC_DIR/"index.faiss").open("w", encoding='utf-8') as file:
     #    for record in records:
@@ -64,20 +74,24 @@ def build_semantic_index():
     
 @lru_cache(maxsize=1)
 def load_semantic_index():
-    path = SEMANTIC_DIR/"index.faiss"
-
-    #if not path.exists():
-        #raise filenotfound!   
-
-    return faiss.read_index(str(path))
-
+    try:
+        return faiss.read_index(str(SEMANTIC_DIR/"index.faiss"))
+    except (RuntimeError, OSError) as e:
+        raise ValueError(
+                f"Could not load the semantic_index from '{SEMANTIC_DIR}'."
+                f"Run the semantic command first: {e}"
+        ) from e
 
 @lru_cache(maxsize=1)
 def load_semantic_corpus():
-    with CORPUS_PATH.open("r", encoding="utf-8") as file:
-        return tuple(json.loads(line) for line in file)
-
-
+    try:
+        with CORPUS_PATH.open("r", encoding="utf-8") as file:
+            return tuple(json.loads(line) for line in file)
+    except FileNotFoundError as e:
+        raise ValueError(f"Corpus not found: {e}.")
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        raise ValueError(f"Corpus file is corrupted: {e}")
+    
 
 
 @lru_cache(maxsize=512)
@@ -117,8 +131,13 @@ def semantic_search_cached(query, k):
     return tuple(results)
 
 
-
 def search_semantic(query: str, k: int=5):
+    if not isinstance(query, str):
+        raise ValueError("query must be a string")
+
+    if not isinstance(k, int):
+        raise ValueError("k must be an int")
+
     if not query.strip() or k <= 0:
         return []
 
@@ -127,58 +146,10 @@ def search_semantic(query: str, k: int=5):
     return [dict(res) for res in results]
 
 
-
 def clear_semantic_cache():
     semantic_search_cached.cache_clear()
     load_semantic_index.cache_clear()
     load_semantic_corpus.cache_clear()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 '''

@@ -1,3 +1,7 @@
+from typing_extensions import runtime
+
+from numpy import e, isin
+
 from .retrieve import retrieve_chunks
 from .semantic import search_semantic
 
@@ -41,14 +45,23 @@ def reciprocal_rank_fusion(lexical, semantic, k0=60, limit=5):
 
 
 def search_hybrid(query: str, k: int = 5):
+    if not isinstance(query, str):
+        raise ValueError("query must be a string")
+
+    if not isinstance(k, int):
+        raise ValueError("k must be an int")
+
     if not query.strip() or k  <= 0:
         return []
 
     candidate_k = max(20, k)
 
-    lexical_search = retrieve_chunks(query, candidate_k)
-    semantic_search = search_semantic(query, candidate_k)
-    
+    try:
+        lexical_search = retrieve_chunks(query, candidate_k)
+        semantic_search = search_semantic(query, candidate_k)
+    except (FileNotFoundError, ValueError, RuntimeError) as e:
+        raise ValueError(f"Hybrid search failed: '{e}'")
+
     return reciprocal_rank_fusion(
         lexical_search,
         semantic_search,
