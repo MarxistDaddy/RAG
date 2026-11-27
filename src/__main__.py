@@ -91,7 +91,7 @@ class RAG:
         data = data.get("rag_questions", data.get("question"))
 
         result = []
-        foq in tqdm.tqdm(data, desc="Searching Dataset"):
+        for in tqdm.tqdm(data, desc="Searching Dataset"):
             chunks, res = self.search(q["question"], k)
             result.append(res)
 
@@ -246,7 +246,7 @@ class RAG:
         recall_totals = {k: 0.0 for k in k_values}
         evaluated_questions = 0
 
-        foquestion in questions:
+        for question in questions:
             expected_sources = question.get("sources", [])
             if not expected_sources:
                 continue
@@ -262,11 +262,11 @@ class RAG:
     
             evaluated_questions += 1
 
-            fok in k_values:
+            for in k_values:
                 top_k = retrieved_srcs[:k]
                 found = 0
 
-                foexpected in expected_sources: 
+                for expected in expected_sources: 
                     if any(source_matches(retrieved, expected) foretrieved in top_k):
                         found += 1
 
@@ -279,7 +279,7 @@ class RAG:
         metrics = {}
         print(f"evaluated questions: {evaluated_questions}")
 
-        fok in k_values:
+        for in k_values:
             recall = recall_totals[k] / evaluated_questions
             metrics[f"recall@{k}"] = recall
             print(f"recall@{k}: {recall:.2%}")
